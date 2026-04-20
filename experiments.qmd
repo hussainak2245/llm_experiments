@@ -1,0 +1,38 @@
+---
+title: "Experiment Design"
+---
+
+## Common settings
+
+- Response: **Accuracy**
+- Replicates: **3**
+- Batch sizes: **10, 30, 50**
+- Sample size per run: **n = 200** (random question pool)
+
+## Experiment 1 (GSM8K, single model)
+
+- Dataset: **GSM8K**
+- Model: **Gemini 2.5 Flash**
+- Languages: **ENG**
+- Factors: Batch Size
+
+## Experiment 2 (GSM8K, multi-model + multilingual)
+
+- Dataset: **GSM8K**
+- Models: **Claude, DeepSeek, ChatGPT, Gemini**
+- Languages: **ENG, AR, CN**
+- Factors: Model, Batch Size, Language
+
+## Experiment 3 (LeetCode, multi-model + multilingual)
+
+- Dataset: **LeetCode**
+- Models: **Claude, DeepSeek, ChatGPT, Gemini**
+- Languages: **ENG, AR, CN**
+- Factors: Model, Batch Size, Language
+
+## Experiment 4 (HARDMath, multi-model + multilingual)
+
+- Dataset: **HARDMath**
+- Models: **Claude, DeepSeek, ChatGPT, Gemini**
+- Languages: **ENG, AR, CN**
+- Factors: Model, Batch Size, Language

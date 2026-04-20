@@ -1,0 +1,5 @@
+experiment,dataset,models,batch_sizes,replicates,languages,sample_size,response
+1,GSM8K,"Gemini 2.5 Flash","10|30|50",3,ENG,200,Accuracy
+2,GSM8K,"Claude|DeepSeek|ChatGPT|Gemini","10|30|50",3,"ENG|AR|CN",200,Accuracy
+3,LeetCode,"Claude|DeepSeek|ChatGPT|Gemini","10|30|50",3,"ENG|AR|CN",200,Accuracy
+4,HARDMath,"Claude|DeepSeek|ChatGPT|Gemini","10|30|50",3,"ENG|AR|CN",200,Accuracy

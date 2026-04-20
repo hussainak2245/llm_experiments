@@ -1,0 +1,27 @@
+---
+title: "LLM Performance DOE Workspace"
+---
+
+This workspace supports **Python + R** analysis of LLM performance using design-of-experiments (DOE) methods.
+
+## Project structure
+
+- `experiments.qmd`: DOE experiment matrix and setup
+- `data/datasets/`: dataset metadata and links
+- `data/results/`: output results files
+- `scripts/helpers.py`: Python helper functions
+- `scripts/helpers.R`: R helper functions
+- `ref.bib`: bibliography for datasets/references
+- `requirements.txt`: Python dependencies
+
+## Quick start
+
+1. Create/activate your Python environment.
+2. Install Python dependencies from `requirements.txt`.
+3. Use `scripts/helpers.py` / `scripts/helpers.R` to run batched experiments.
+4. Save outputs in `data/results/`.
+5. Render the Quarto site when Quarto is installed:
+
+```bash
+quarto render
+```
