@@ -1,0 +1,272 @@
+---
+title: "ANOVA Analysis of LLM Model Accuracy"
+subtitle: "Course Project | STAT 332 - Design of Experiments | Spring 2026"
+format: 
+  pdf:
+    toc: true
+    fig_caption: true
+    bibliography: ref.bib
+    fontsize: 8pt
+    geometry: margin=1in
+    titlepage: true
+---
+
+```{r setup, include=FALSE}
+
+set.seed(123)
+
+# pacman
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, knitr, readxl, ggstatsplot, car, MASS, randtests)
+
+theme_set(theme_minimal(base_size = 10))
+
+
+
+# Color palette
+colors <- c("#E63946", "#2196F3", "#FF9800", "#4CAF50", "#9C27B0",
+            "#00BCD4", "#FF5722", "#8BC34A", "#673AB7", "#F06292")
+```
+
+## Data Description
+
+```{r data-exploration, warning=FALSE, message=FALSE}
+
+data <- read_csv("data.csv")
+
+kable(head(data, 10), caption = "First 10 rows of the dataset")
+
+# turn the language, model, and batch_size variable into a factor
+data <- data %>%
+  filter(batch_size != 1) %>% # 0 or 1 score
+  mutate(language = as.factor(language),
+         model = as.factor(model),
+         batch_size = as.factor(batch_size))
+```
+
+
+```{r table-with-data-description, warning=FALSE, message=FALSE, echo=FALSE}
+# response/factor, description, type and levels of the variables in the dataset
+data_description <- tibble(
+  variable = c("accuracy", "language", "model", "batch_size"),
+  description = c("The accuracy of the LLM model on the test set", 
+                  "The language used in the prompt", 
+                  "The LLM model used for prediction", 
+                  "Number of MCQs in the prompt"),
+  type = c("Response", "Factor", "Factor", "Factor"),
+
+  levels = c(NA, "English, Arabic, Mandarin", "claude, chatgpt, deepseek, gemini", "1, 5, 10, 20")
+)
+kable(data_description, caption = "Description of the variables in the dataset")
+```
+
+## Exploratory Data Analysis
+
+```{r eda1, fig.width=3, fig.height=3, fig.align='center', echo=FALSE}
+#| fig-cap: "Boxplot of accuracy by language"
+# boxplot of accuracy by language
+ggplot(data, aes(x = language, y = accuracy, fill = language)) +
+  geom_boxplot(box.linewidth = 0.5, 
+               box.color = "white",
+               median.linewidth = 0.5, 
+               median.color = "black",
+               whisker.linetype = 4,
+               outlier.shape = 8,
+               outlier.size = 1) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Language", y = "Accuracy") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+```{r eda2, fig.width=4, fig.height=3, fig.align='center', echo=FALSE}
+#| fig-cap: "Boxplot of accuracy by language and batch size"
+# boxplot of accuracy by language
+ggplot(data, aes(x = language, y = accuracy, fill = language)) +
+  geom_boxplot(box.linewidth = 0.5, 
+               box.color = "white",
+               median.linewidth = 0.5, 
+               median.color = "black",
+               whisker.linetype = 4,
+               outlier.shape = 8,
+               outlier.size = 1) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Language", y = "Accuracy") +
+  facet_wrap(~ batch_size, ncol = 4, labeller = label_value) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r eda3, fig.width=7, fig.height=3, fig.align='center', echo=FALSE}
+#| fig-cap: "Boxplot of accuracy by model and batch size"
+# boxplot of accuracy by model
+ggplot(data, aes(x = model, y = accuracy, fill = model)) +
+  geom_boxplot(box.linewidth = 0.5, 
+               box.color = "white",
+               median.linewidth = 0.5, 
+               median.color = "black",
+               whisker.linetype = 4,
+               outlier.shape = 8,
+               outlier.size = 1) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Model", y = "Accuracy") +
+  facet_wrap(~ batch_size, ncol = 4, labeller = label_value) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+
+## Hypothesis Testing
+
+### One-way ANOVA
+
+```{r one-way-anova, warning=FALSE, message=FALSE, fig.width=4, fig.height=4, fig.align='center'}
+# one-way ANOVA for language
+fit1 <- aov(accuracy ~ language, data = data)
+summary(fit1)
+# language is significant
+
+# check assumptions of ANOVA
+
+# normality
+shapiro.test(residuals(fit1)) 
+# not met
+
+# homogeneity of variances
+plot(fit1, 1,
+  col = adjustcolor("#7A1E3A", 0.6),
+  pch = 16) # residuals vs fitted values
+
+
+
+
+
+# one-way ANOVA for model
+fit2 <- aov(accuracy ~ model, data = data)
+summary(fit2)
+# model is not significant
+
+
+# one-way ANOVA for batch size
+fit3 <- aov(accuracy ~ batch_size, data = data)
+summary(fit3)
+# batch size is significant
+
+# Normality assumption is not met for batch size
+plot(fit3, 2, col = adjustcolor("#7A1E3A", 0.6),  pch = 16 ) # normal Q-Q plot
+shapiro.test(residuals(fit3))
+# not met
+plot(fit3, 1,
+  col = adjustcolor("#7A1E3A", 0.6),
+  pch = 16) # residuals vs fitted values
+
+
+
+# two-way ANOVA for language and batch size
+fit4 <- aov(accuracy ~ language * batch_size, data = data)
+summary(fit4)
+# language, batch size are significant
+# But the interaction is not significant at 0.05 level
+
+# remove the interaction term and fit the model again
+fit5 <- aov(accuracy ~ language + batch_size, data = data)
+summary(fit5)
+
+# check assumptions of ANOVA
+shapiro.test(residuals(fit5))
+# not met, p-value is less than 0.05
+plot(fit5, 1,
+  col = adjustcolor("#7A1E3A", 0.6),
+  pch = 16) # residuals vs fitted values
+
+# p-value is more than 0.05, so the homogeneity of variances assumption is met
+
+# runs vs fitted values plot
+
+plot(fit5, 1,
+  col = adjustcolor("#7A1E3A", 0.6),
+  pch = 16)
+plot(fit5, 2, col = adjustcolor("#7A1E3A", 0.6),  pch = 16 ) # normal Q-Q plot
+plot(fit5, 3, col = adjustcolor("#7A1E3A", 0.6),  pch = 16 ) # scale-location plot
+plot(fit5, 4, col = adjustcolor("#7A1E3A", 0.6),  pch = 16 ) # residuals vs leverage plot
+
+
+# using boxcox transformation to meet the normality assumption
+
+boxcox(fit5, lambda = seq(-2, 2, 0.1), main = "Box-Cox Transformation for accuracy")
+# lambda = approx. 1.6 is the best transformation
+
+# with the boxcox transformation, we can transform the response variable and fit the model again
+data$accuracy_transformed <- data$accuracy^1.6
+
+fit6 <- aov(accuracy_transformed ~ language + batch_size, data = data)
+summary(fit6)
+
+# Assumptions ~ Normality, Homogeneity of variances, Independence of residuals, Randomness of residuals, No outliers or influential points
+
+
+
+plot(fit6, 1,
+  col = adjustcolor("#7A1E3A", 0.6),
+  pch = 16) # residuals vs fitted values
+leveneTest(accuracy_transformed ~ language, data = data)
+leveneTest(accuracy_transformed ~ batch_size, data = data)
+# p-value ~ 0.629 and 0.4121 resp., so the homogeneity of variances assumption is met
+
+
+plot(fit6, 2, col = adjustcolor("#7A1E3A", 0.6),  pch = 16 ) # normal Q-Q plot
+shapiro.test(residuals(fit6))
+# p-value ~ 0.1049, so the normality assumption is met
+
+
+# runs test
+
+runs.test(residuals(fit6))
+# p-value is 0.7569, so the residuals are random
+
+
+# outliers and influential points
+plot(fit6, 4, col = adjustcolor("#7A1E3A", 0.6),  pch = 16 ) # residuals vs leverage plot
+# there are outliers and influential points flagged
+# but these are valid data points
+# so we will keep them in the analysis
+
+# post-hoc test for language
+TukeyHSD(fit6, "language")
+TukeyHSD(fit6, "batch_size")
+
+# plot the interaction between language and batch size
+
+
+ggplot(data, aes(x = language, y = accuracy_transformed, color = batch_size, group = batch_size)) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +
+  theme_minimal()
+
+
+# Now language and model
+fit7 <- aov(accuracy~ language + model, data = data)
+summary(fit7)
+
+# model is not significant at 0.05, but language is still significant
+
+# Model and batch size
+fit8 <- aov(accuracy ~ model + batch_size, data = data)
+summary(fit8)
+# batch size is significant, but model is not significant at 0.05 level
+
+
+# three-way ANOVA for language, model and batch size
+fit9 <- aov(accuracy ~ language * model * batch_size, data = data)
+summary(fit9)
+# further confirms only language and batch size are significant, but not model or interactions
+
+
+# fit6 is the best model, so we will use it will be the final fit
+
+
+```
+
+
+
+

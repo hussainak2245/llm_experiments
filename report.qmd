@@ -1,0 +1,44 @@
+---
+title: "ANOVA Analysis of LLM Model Accuracy"
+subtitle: "Course Project | STAT 332 - Design of Experiments | Spring 2026"
+format: 
+  pdf:
+    toc: true
+    fig_caption: true
+    bibliography: ref.bib
+    fontsize: 8pt
+    geometry: margin=1in
+    titlepage: true
+---
+
+
+## Introduction
+What motivated you to study this method? Why are you interested?
+Focus on the reason this technique was developed.
+
+## Background
+What kinds of statistical problems is it good for analyzing?
+Review and discuss at least three statistical papers that define the
+technique, i.e. literature review.
+
+## Methodology
+Brief description of the data
+How is it being collected?
+What variables are being measured and analyzed?
+Is there anything special about the data such as autocorrelation?
+Brief description of the technique including statistical model
+Illustrate the technique using your data
+
+## Results
+Summary and interpretation of your analysis
+SAS or R code or SPSS syntax (or any other software you use) may be
+placed in the Appendix. Use Courier font to present SAS or R or SPSS
+syntax results to maintain its formatting.
+## Discussion and Summary
+What do you think of the technique?
+Is it a useful methodology?
+Relate your results to other closely related techniques currently being
+used
+Discuss potential issues and further researc
+## References
+
